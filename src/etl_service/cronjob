@@ -1,0 +1,2 @@
+# Run the ETL script every 3 minutes
+*/3 * * * * /usr/local/bin/python3 /home/app/etl_script.py >> /var/log/cron.log 2>&1

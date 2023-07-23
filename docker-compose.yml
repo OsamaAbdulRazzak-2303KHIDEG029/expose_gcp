@@ -1,0 +1,39 @@
+version: "3"
+services:
+  etl_service:
+    build:
+      context: ./src/etl_service
+    volumes:
+      - ./src/etl_service:/home/app
+      - spark_logs:/var/log
+    depends_on:
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "echo", "Healthcheck for ETL service"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  matching_service:
+    build:
+      context: ./src/matching_service
+    depends_on:
+      etl_service:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
+
+  redis:
+    image: redis:latest
+    command: ["redis-server", "--bind", "0.0.0.0", "--port", "6379"]
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+volumes:
+  spark_logs:
